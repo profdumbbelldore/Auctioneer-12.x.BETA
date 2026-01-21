@@ -1,0 +1,18 @@
+## Title: Swatter |cff224477(lib)
+## Notes: Debugging tool for handling and displaying of error messages in a useful way.
+##
+## IconTexture: Interface/Addons/!Swatter/Textures/SwatterIcon.blp
+##
+## Interface: 110200, 110207, 120000, 40400, 11503
+## SavedVariables: SwatterData
+##
+## Version: 12.x.x (Midnight)
+## Revision: $Id$
+## Author: Norganna's AddOns
+## X-Part-Of: Libraries
+## X-Category: Library
+## X-URL: http://auctioneeraddon.com/
+## X-Feedback: https://auctioneeraddon.com/slack
+##
+Support\Load.xml
+Swatter.lua
