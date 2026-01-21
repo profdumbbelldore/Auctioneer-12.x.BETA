@@ -1,0 +1,20 @@
+## Title: Auctioneer Stats: |cff447722Over Time
+## Notes: Provides statistics to Auctioneer
+##
+## Interface: 110200, 110207, 120000
+## LoadOnDemand: 0
+## Dependencies: Stubby, Auctioneer
+## OptionalDependencies: !nLog, SlideBar, Configator, Babylonian, DebugLib, TipHelper, LibExtraTip, LibDataBroker
+## SavedVariables: AuctioneerStatsOverTimeData
+##
+## Version: 12.x.x (Midnight)
+## Revision: $Id$
+## Author: Norganna's AddOns
+## X-Part-Of: Auctioneer
+## X-Category: Auction House
+## X-Max-Interface: 120000
+## X-URL: http://auctioneeraddon.com/
+## X-Feedback: https://auctioneeraddon.com/slack
+##
+
+Main.lua

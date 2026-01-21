@@ -1,0 +1,20 @@
+## Title: Auctioneer Util: |cff447722Deal Finder
+## Notes: Shows deals from recent scan.
+##
+## Interface: 110200, 110207, 120000
+## LoadOnDemand: 0
+## Dependencies: Stubby, Auctioneer
+## OptionalDependencies: !nLog, SlideBar, Configator, Babylonian, DebugLib, TipHelper, LibExtraTip, LibDataBroker
+## SavedVariables: AuctioneerUtilDealFinderData
+##
+## Version: 12.x.x (Midnight)
+## Revision: $Id$
+## Author: Norganna's AddOns
+## X-Part-Of: Auctioneer
+## X-Category: Auction House
+## X-Max-Interface: 120000
+## X-URL: http://auctioneeraddon.com/
+## X-Feedback: https://auctioneeraddon.com/slack
+##
+
+Main.lua
