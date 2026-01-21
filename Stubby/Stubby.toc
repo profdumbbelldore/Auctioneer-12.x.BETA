@@ -1,0 +1,20 @@
+## Title: Stubby |cff224477(lib)
+## Notes: Allows AddOns to load automatically, and provides event handling support.
+##
+## Interface: 110200, 110207, 120000, 40400, 11503
+## OptionalDeps: !nLog, DebugLib
+## SavedVariables: StubbyConfig
+##
+## Version: 12.x (Midnight's Revenge)
+## Revision: $Id$
+## Author: Norganna's AddOns
+## X-Part-Of: Libraries
+## X-Category: Library
+## X-URL: http://auctioneeraddon.com/
+## X-Feedback: https://auctioneeraddon.com/slack
+##
+Support\Load.xml
+
+Libs\Load.xml
+Stubby.lua
+Stubby.xml

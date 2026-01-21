@@ -1,0 +1,17 @@
+## Title: SlideBar |cff224477(lib)
+## Notes: Allows alternative placement of minimap icons into an expanding bar that sits off the side of the screen.
+## OptionalDeps: !Swatter
+##
+## Interface: 110200, 110207, 120000, 40400, 11503
+## LoadOnDemand: 0
+## SavedVariables: SlideBarConfig
+##
+## Version: 12.x.x (Midnight)
+## Revision: $Id$
+## Author: Norganna's AddOns
+## X-Part-Of: Libraries
+## X-Category: Library
+## X-URL: http://auctioneeraddon.com/
+## X-Feedback: https://auctioneeraddon.com/slack
+##
+Load.xml
