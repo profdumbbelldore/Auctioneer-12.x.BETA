@@ -1,4 +1,4 @@
-﻿--[[
+--[[
 	Enchantrix Addon for World of Warcraft(tm).
 	Version: <%version%> (<%codename%>)
 	Revision: $Id$
@@ -329,46 +329,32 @@ end
 
 -- (funcVars, event, player, spell, rank, target)
 -- BfA: spell is NIL, rank is guid, target is spell ID
-function onEvent(funcVars, event, player, spellNameIsNIL, rankGUID, spellID)
+-- (funcVars, event, unit, castGUID, spellID)
+-- (funcVars, event, unit, castGUID, spellID)
+function onEvent(funcVars, event, unit, castGUID, spellID)
+	if unit ~= "player" then return end 
 
 	if event == "UNIT_SPELLCAST_SUCCEEDED" then
 		DisenchantEvent.finished = nil
-		--Enchantrix.Util.DebugPrint("Spellcast", ENX_INFO, "cast succeed1", "info:", funcVars, event, spellNameIsNIL, rankGUID, spellID )
--- BfA: data order is screwed up here!
-		spellID = rankGUID;
-		rankGUID = spellNameIsNIL;
-		spellNameIsNIL = NIL;
-		if ((spellID == idDisenchant) or (spellID == idProspecting) or (spellID == idMilling)) then
+		-- In modern WoW, the arguments are: unit, castGUID, spellID
+		if spellID and ((spellID == idDisenchant) or (spellID == idProspecting) or (spellID == idMilling)) then
 			if (DisenchantEvent.spellTarget and ((GetTime() - DisenchantEvent.targetted) < 10)) then
-				--Enchantrix.Util.DebugPrint("Spellcast", ENX_INFO, "cast succeed2", "info:", funcVars, event, spellNameIsNIL, rankGUID, spellID )
 				DisenchantEvent.finished = DisenchantEvent.spellTarget
 				DisenchantEvent.spellname = spellID;
 			end
 		end
 		DisenchantEvent.sent = nil
+
 	elseif event == "UNIT_SPELLCAST_FAILED" then
--- BfA: data order is screwed up here!
-		spellID = rankGUID;
-		rankGUID = spellNameIsNIL;
-		spellNameIsNIL = NIL;
-		--Enchantrix.Util.DebugPrint("Spellcast", ENX_INFO, "cast failed", "info:", funcVars, event, spellNameIsNIL, rankGUID, spellID )
-		--Enchantrix.Util.DebugPrint("Spellcast", ENX_INFO, "cast failed 0", "info:", DisenchantEvent.sent, DisenchantEvent.spellTarget, (GetTime() - DisenchantEvent.targetted) )
-		if (DisenchantEvent.sent
-			and DisenchantEvent.spellTarget
-			and ((GetTime() - DisenchantEvent.targetted) < 5)) then
-			-- first, make sure that we think this item is disenchantable to start with (reduce false positives)
-			--Enchantrix.Util.DebugPrint("Spellcast", ENX_INFO, "cast failed 1", "info:", spellID, Enchantrix.Util.GetIType(DisenchantEvent.spellTarget) )
-			if ( (spellID == idDisenchant) and Enchantrix.Util.GetIType(DisenchantEvent.spellTarget) ) then
-				-- this means that the item is not disenchantable, but we think it is!
-				-- now make sure the user had enough skill to disenchant it
-				-- make sure skill level is up to date
-				local skill = Enchantrix.Util.GetUserEnchantingSkill();
-				local name, link, quality, itemLevel = GetItemInfo( DisenchantEvent.spellTarget );
-				local skillNeeded = Enchantrix.Util.DisenchantSkillRequiredForItemLevel(itemLevel, quality);
-				--Enchantrix.Util.DebugPrint("Spellcast", ENX_INFO, "cast failed 2", "info:", skill, skillNeeded )
-				if (skill >= skillNeeded) then
-					--Enchantrix.Util.DebugPrint("Spellcast", ENX_INFO, "cast failed 3", "info:" )
-					Enchantrix.Storage.SaveNonDisenchantable(DisenchantEvent.spellTarget)
+		if spellID and (spellID == idDisenchant) then
+			if (DisenchantEvent.sent and DisenchantEvent.spellTarget and ((GetTime() - DisenchantEvent.targetted) < 5)) then
+				if Enchantrix.Util.GetIType(DisenchantEvent.spellTarget) then
+					local skill = Enchantrix.Util.GetUserEnchantingSkill();
+					local name, link, quality, itemLevel = GetItemInfo( DisenchantEvent.spellTarget );
+					local skillNeeded = Enchantrix.Util.DisenchantSkillRequiredForItemLevel(itemLevel, quality);
+					if (skill >= skillNeeded) then
+						Enchantrix.Storage.SaveNonDisenchantable(DisenchantEvent.spellTarget)
+					end
 				end
 			end
 		end
@@ -376,84 +362,53 @@ function onEvent(funcVars, event, player, spellNameIsNIL, rankGUID, spellID)
 		DisenchantEvent.sent = nil
 
 	elseif event == "UNIT_SPELLCAST_INTERRUPTED" then
-		--Enchantrix.Util.DebugPrint("Spellcast", ENX_INFO, "cast interrupted", "info:", funcVars, event, spellNameIsNIL, rankGUID, spellID )
--- BfA: data order is screwed up here! spellID = rankGUID; rankGUID = spellNameIsNIL; spellNameIsNIL = NIL;
-		-- disenchant interrupted
 		DisenchantEvent.finished = nil
 		DisenchantEvent.sent = nil
 		DisenchantEvent.spellTarget = nil
 		DisenchantEvent.targetted = nil
 
---[[
--- left here for debugging purposes
-	elseif event == "UNIT_SPELLCAST_START" then
-		-- NOTE: we don't get the spell name here
-		Enchantrix.Util.DebugPrint("Spellcast", ENX_INFO, "cast start", "info:", funcVars, event, spellNameIsNIL, rankGUID, spellID )
-
-	elseif event == "UNIT_SPELLCAST_STOP" then
-		Enchantrix.Util.DebugPrint("Spellcast", ENX_INFO, "cast stop", "info:", funcVars, event, spellNameIsNIL, rankGUID, spellID )
-]]
-
 	elseif event == "UNIT_SPELLCAST_SENT" then
-		-- NOTE: we do get the spell name here
-		--Enchantrix.Util.DebugPrint("Spellcast", ENX_INFO, "cast sent", "info:", funcVars, event, spellNameIsNIL, rankGUID, spellID )
-		if ((spellID == idDisenchant) or (spellID == idProspecting) or (spellID == idMilling)) then
+		-- For SENT, the 4th argument (castGUID here) is the spellID
+		local sentSpellID = castGUID 
+		if sentSpellID and ((sentSpellID == idDisenchant) or (sentSpellID == idProspecting) or (sentSpellID == idMilling)) then
 			DisenchantEvent.sent = true;
-			DisenchantEvent.spellname = spellID;
-			---Enchantrix.Util.DebugPrint("Spellcast", ENX_INFO, "cast sent 2", "info:", funcVars, event, spellNameIsNIL, rankGUID, spellID )
+			DisenchantEvent.spellname = sentSpellID;
 		end
+
 	elseif event == "LOOT_OPENED" then
--- BfA: all params are NIL
-		--Enchantrix.Util.DebugPrint("loot", ENX_INFO, "opened", "info:", funcVars, event, spellNameIsNIL, rankGUID, spellID )
 		if DisenchantEvent.finished then
-			local isDisenchant = nil
-			local isProspect = nil
-			local isMilling = nil
+			local isDisenchant = (DisenchantEvent.spellname == idDisenchant)
+			local isProspect = (DisenchantEvent.spellname == idProspecting)
+			local isMilling = (DisenchantEvent.spellname == idMilling)
 			local chatPrintYield = Enchantrix.Settings.GetSetting('chatShowFindings')
-			if (DisenchantEvent.spellname == idDisenchant) then
-				if (chatPrintYield) then
-					Enchantrix.Util.ChatPrint(_ENCH("FrmtFound"):format(DisenchantEvent.finished))
+			
+			if (chatPrintYield) then
+				if isDisenchant then Enchantrix.Util.ChatPrint(_ENCH("FrmtFound"):format(DisenchantEvent.finished))
+				elseif isProspect then Enchantrix.Util.ChatPrint(_ENCH("FrmtProspectFound"):format(DisenchantEvent.finished))
+				elseif isMilling then Enchantrix.Util.ChatPrint(_ENCH("FrmtMillingFound"):format(DisenchantEvent.finished))
 				end
-				isDisenchant = true;
-			elseif (DisenchantEvent.spellname == idProspecting) then
-				if (chatPrintYield) then
-					Enchantrix.Util.ChatPrint( _ENCH("FrmtProspectFound"):format(DisenchantEvent.finished))
-				end
-				isProspect = true;
-			elseif (DisenchantEvent.spellname == idMilling) then
-				if (chatPrintYield) then
-					Enchantrix.Util.ChatPrint( _ENCH("FrmtMillingFound"):format(DisenchantEvent.finished))
-				end
-				isMilling = true;
 			end
+
 			local itemLink = DisenchantEvent.finished
 			local sig = Enchantrix.Util.GetSigFromLink(itemLink)
 			local reagentList = {}
 			for i = 1, GetNumLootItems(), 1 do
-				if GetLootSlotType(i) == LOOT_SLOT_ITEM then	-- LootSlotIsItem(i)
+				if GetLootSlotType(i) == LOOT_SLOT_ITEM then
 					local icon, name, quantity, rarity = GetLootSlotInfo(i)
 					local link = GetLootSlotLink(i)
 					if (chatPrintYield) then
 						Enchantrix.Util.ChatPrint(("  %s x%d"):format(link, quantity))
 					end
-					-- Save result
 					local reagentID = Enchantrix.Util.GetItemIdFromLink(link)
 					if reagentID then
-						-- for prospecting and milling, we need to save the whole list
 						reagentList[ reagentID ] = (reagentList[ reagentID ] or 0) + quantity
--- disenchanting in 7.3.5 will result in more than one item, sometimes 3! (epic level 66 is great example)
 						Enchantrix.Storage.SaveDisenchant(sig, reagentID, quantity, itemLink)
 					end
 				end
 			end
 
-			if (isProspect)  then
-				Enchantrix.Storage.SaveProspect(sig, reagentList)
-			end
-
-			if (isMilling)  then
-				Enchantrix.Storage.SaveMilling(sig, reagentList)
-			end
+			if (isProspect) then Enchantrix.Storage.SaveProspect(sig, reagentList) end
+			if (isMilling) then Enchantrix.Storage.SaveMilling(sig, reagentList) end
 		end
 		DisenchantEvent.spellTarget = nil
 		DisenchantEvent.targetted = nil
