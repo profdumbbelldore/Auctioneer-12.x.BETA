@@ -90,6 +90,12 @@ end
 function private.GetRegistry(tooltip) return lib.tooltipRegistry[tooltip] end
 
 function private.ProcessItem(tooltip, reg)
+	if not tooltip and reg and reg.extraTip then
+        tooltip = reg.extraTip:GetParent()
+    	end
+    	if not tooltip or not tooltip.AddLine then
+        return
+    	end
 	local self = lib
 	local additional = reg.additional
 	local item, name, quantity, link, quality = additional.item, additional.name, additional.quantity, additional.link, additional.quality
@@ -106,6 +112,14 @@ function private.ProcessItem(tooltip, reg)
 		extraTip:Show()
 		ProcessCallbacks(reg, "extrashow", tooltip, extraTip)
 	end
+	if tooltip:IsShown() and MerchantFrame and MerchantFrame:IsShown() then
+        -- This forces the tooltip to recognize the manually added lines
+        tooltip:Show() 
+        
+        -- Optional: Force a height update if the box looks too small
+        local width, height = tooltip:GetSize()
+        tooltip:SetSize(width, height + 20) 
+    end
 end
 
 function private.ProcessSpell(tooltip, reg)
@@ -470,6 +484,9 @@ do -- ExtraTip CLASS
 	end
 
 	function class:Attach(tooltip)
+		if not tooltip or self.embedMode then 
+        		return 
+    		end
 		if IsProtected(tooltip:GetOwner()) then self:Release() return end
 		if self.parent then pcall(function() self:SetParentClamp(0) end) end
 		self.parent = tooltip
@@ -570,12 +587,25 @@ do -- ExtraTip CLASS
 	function class:Show() show(self) if self:InitLines() then show(self) end self:MatchSize() end
 end
 
+-- Force Embedded tooltips
+if status.filetrackerMain == LOAD_START then status.filetrackerMain = LOAD_COMPLETE end
+
+lib.embedMode = true 
+lib:SetEmbedMode(true)
+
+lib:Activate()
+
 local combatResetFrame = CreateFrame("Frame")
 combatResetFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
 combatResetFrame:SetScript("OnEvent", function()
-    for tip, reg in pairs(lib.tooltipRegistry) do if tip:IsShown() and reg.extraTip then reg.extraTip:MatchSize(true) end end
+    for i = 1, 20 do
+        local tip = _G[LIBSTRING.."Tooltip"..i]
+        if tip then
+            tip.inMatchSize = nil 
+            -- In embedded mode, we just ensure the extra tip is hidden
+            -- so it doesn't accidentally show up as a ghost window.
+            tip:SetWidth(1)
+            tip:Hide()
+        end
+    end
 end)
-
-if status.filetrackerMain == LOAD_START then status.filetrackerMain = LOAD_COMPLETE end
-lib:SetEmbedMode(lib.embedMode)
-lib:Activate()

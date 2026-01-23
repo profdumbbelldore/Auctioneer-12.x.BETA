@@ -181,7 +181,7 @@ local getterGatherdata
 
 local function GenerateGatherdata()
 	-- Locals to be used as Upvalues
-	local GetMerchantItemInfo = GetMerchantItemInfo
+	local GetMerchantItemInfo = _G.GetMerchantItemInfo or (C_MerchantFrame and C_MerchantFrame.GetMerchantItemInfo)
 	local GetContainerItemInfo = C_Container.GetContainerItemInfo
 	local GetInventoryItemLink = GetInventoryItemLink
 	local GetInventoryItemCount = GetInventoryItemCount
@@ -212,19 +212,33 @@ local function GenerateGatherdata()
 	getterGatherdata = {
 
 		GetMerchantItem = function(reg, getterArgs)
+			-- From your error log, we know getterArgs[1] is working again!
 			local index = getterArgs[1]
 			local additional = reg.additional
-			local _,_,p,q,na,cu,ec = GetMerchantItemInfo(index)
-			additional.quantity = q
-			additional.event = "SetMerchantItem"
-			additional.eventIndex = index
-			additional.price = p
-			additional.numAvailable = na
-			additional.canUse = cu
-			additional.extendedCost = ec
-			additional.link = GetMerchantItemLink(index)
-		end,
+			
+			-- Modern Blizzard Merchant Link retrieval
+			local link
+			if index then
+				link = GetMerchantItemLink(index)
+			end
 
+			if link then
+				reg.item = link
+				additional.link = link
+				
+				-- Hand-off to Tooltip module
+				local TooltipModule = Auctioneer:Module("Tooltip")
+				if TooltipModule and TooltipModule.DisplayTooltip then
+					TooltipModule:DisplayTooltip("item", _G.GameTooltip, reg.extraTip, nil, 1, nil, link)
+				end
+
+				private.ProcessItem(_G.GameTooltip, reg, "item")
+				
+				if _G.GameTooltip:IsShown() then
+					_G.GameTooltip:Show()
+				end
+			end
+		end,
 		GetCurrencyToken = function(reg, getterArgs)
 			local index = getterArgs[1]
 			local additional = reg.additional
