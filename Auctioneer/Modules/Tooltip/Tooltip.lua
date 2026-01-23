@@ -26,7 +26,7 @@ function Module:DisplayTooltip(type, tooltip, tip, ...)
 
 	tooltip:SetColor(0.3, 0.9, 0.8)
 	tooltip:SetMoneyAsText(false)
-	tooltip:SetEmbed(false)
+	tooltip:SetEmbed(true)
 
 	local itemKey
 
