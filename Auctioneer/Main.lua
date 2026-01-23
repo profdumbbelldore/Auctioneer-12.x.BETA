@@ -10,7 +10,7 @@ end
 
 local AUC_VERSION = "<%version%>"
 if AUC_VERSION:byte(1) == 60 then -- 60 = '<'
-	AUC_VERSION = "8.3.DEV"
+	AUC_VERSION = "12.0 Beta"
 end
 
 local parts = {}
