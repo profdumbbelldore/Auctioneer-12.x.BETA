@@ -181,11 +181,20 @@ local getterGatherdata
 
 local function GenerateGatherdata()
 	-- Locals to be used as Upvalues
-	local GetMerchantItemInfo = _G.GetMerchantItemInfo or (C_MerchantFrame and C_MerchantFrame.GetMerchantItemInfo)
+	local GetMerchantItemInfo = GetMerchantItemInfo
+	if C_MerchantFrame and C_MerchantFrame.GetItemInfo then -- ### hybrid : it appears Classic MoP uses DataProc and still needs old GetMerchantItemInfo
+		GetMerchantItemInfo = function(index)
+			local info = C_MerchantFrame.GetItemInfo(index)
+			if info then
+				return info.name, info.texture, info.price, info.stackCount, info.numAvailable, info.isPurchasable, info.isUsable, info.hasExtendedCost, info.currencyID
+			end
+		end
+	end
+	local GetMerchantItemLink = GetMerchantItemLink
 	local GetContainerItemInfo = C_Container.GetContainerItemInfo
 	local GetInventoryItemLink = GetInventoryItemLink
 	local GetInventoryItemCount = GetInventoryItemCount
-	local GetRecipeFixedReagentItemLink = C_TradeSkillUI.GetRecipeFixedReagentItemLink
+	-- local GetRecipeFixedReagentItemLink = C_TradeSkillUI.GetRecipeFixedReagentItemLink -- ### removed in 12.0.0, see GetRecipeReagentItem below
 	local GetInboxItemInfo = GetInboxItem -- local name changed to avoid conflict with Getter name
 	local GetSendMailItemInfo = GetSendMailItem
 	local GetTradePlayerItemInfo = GetTradePlayerItemInfo
@@ -212,33 +221,20 @@ local function GenerateGatherdata()
 	getterGatherdata = {
 
 		GetMerchantItem = function(reg, getterArgs)
-			-- From your error log, we know getterArgs[1] is working again!
 			local index = getterArgs[1]
 			local additional = reg.additional
-			
-			-- Modern Blizzard Merchant Link retrieval
-			local link
-			if index then
-				link = GetMerchantItemLink(index)
-			end
-
-			if link then
-				reg.item = link
-				additional.link = link
-				
-				-- Hand-off to Tooltip module
-				local TooltipModule = Auctioneer:Module("Tooltip")
-				if TooltipModule and TooltipModule.DisplayTooltip then
-					TooltipModule:DisplayTooltip("item", _G.GameTooltip, reg.extraTip, nil, 1, nil, link)
-				end
-
-				private.ProcessItem(_G.GameTooltip, reg, "item")
-				
-				if _G.GameTooltip:IsShown() then
-					_G.GameTooltip:Show()
-				end
-			end
+			local _,_,p,q,na,cp,cu,ec,cID = GetMerchantItemInfo(index)
+			additional.quantity = q
+			additional.event = "SetMerchantItem"
+			additional.eventIndex = index
+			additional.price = p
+			additional.numAvailable = na
+			additional.canUse = cu
+			additional.extendedCost = ec
+			additional.currencyID = cID
+			additional.link = GetMerchantItemLink(index)
 		end,
+
 		GetCurrencyToken = function(reg, getterArgs)
 			local index = getterArgs[1]
 			local additional = reg.additional
@@ -275,8 +271,8 @@ local function GenerateGatherdata()
 			end
 			--]]
 
-			additional.link = GetRecipeFixedReagentItemLink(recipeID, reagentIndex)
-			-- ### todo: handle 'quality' reagents uing C_TradeSkillUI.GetRecipeQualityReagentItemLink(recipeID, dataSlotIndex, qualityIndex)
+			-- additional.link = GetRecipeFixedReagentItemLink(recipeID, reagentIndex) -- ### GetRecipeFixedReagentItemLink removed in 12.0.0
+			-- ### todo: find another way to get a link
 		end,
 
 		-- GetVoidItem
@@ -643,14 +639,17 @@ local function GenerateTDPHooks()
 	local GetItemInfo = C_Item.GetItemInfo or GetItemInfo
 	local UnitTokenFromGUID = UnitTokenFromGUID
 	local UnitName = UnitName
-	local GetSpellSubtext = C_Spell and C_Spell.GetSpellSubtext or GetSpellSubtext
-	local GetSpellLink = C_Spell and C_Spell.GetSpellLink or GetSpellLink
-	local GetSpellInfo = GetSpellInfo
-	if not GetSpellInfo and C_Spell and C_Spell.GetSpellInfo then
-		local rawGetSpellInfo = C_Spell.GetSpellInfo
+	local GetSpellSubtext = C_Spell.GetSpellSubtext or GetSpellSubtext
+	local GetSpellLink = C_Spell.GetSpellLink or GetSpellLink
+
+	local GetSpellInfo = C_Spell.GetSpellInfo
+	if not GetSpellInfo and _G.GetSpellInfo then -- Unlikely to ever be needed - it seems likely that C_Spell.GetSpellInfo will be migrated to all clients
+		local rawGetSpellInfo = _G.GetSpellInfo
+		local info = {}
 		GetSpellInfo = function(...)
-			local info = rawGetSpellInfo(...)
-			return info.name, nil, info.iconID, info.castTime, info.minRange, info.maxRange, info.spellID, info.originalIconID
+			local name, _, iconID, castTime, minRange, maxRange, spellID, originalIconID = rawGetSpellInfo(...)
+			info.name, info.iconID, info.castTime, info.minRange, info.maxRange, info.spellID, info.originalIconID = name, iconID, castTime, minRange, maxRange, spellID, originalIconID
+			return info
 		end
 	end
 
@@ -735,21 +734,24 @@ local function GenerateTDPHooks()
 		-- fall back to link, if it was set by a gather function, as a last resort
 		if not spell then return end
 
-		local name, _, icon, ctime, minRange, maxRange, spellID = GetSpellInfo(spell)
-		if not (name and spellID) then return end
+		--local name, _, icon, ctime, minRange, maxRange, spellID = GetSpellInfo(spell)
+		local spellinfo = GetSpellInfo(spell)
+		if not spellinfo then return end
+		local spellID = spellinfo.spellID
 		local subtext = GetSpellSubtext(spellID) -- may be nil: spell may not have subtext, also subtext is only loaded on demand (?)
 		local spelllink = GetSpellLink(spellID) -- Caution: this will be a 'spell' type link, even if the spellID relates to a different type (e.g. 'enchant')
 
-		additional.name = name
+		additional.name = spellinfo.name
 		additional.spellID = spellID
 		additional.rank = subtext -- subtext may represent rank or category info depending on Client
 		additional.category = subtext
-		additional.icon = icon
-		additional.castTime = ctime
-		additional.minRange = minRange
-		additional.maxRange = maxRange
+		additional.icon = spellinfo.iconID
+		additional.castTime = spellinfo.castTime
+		additional.minRange = spellinfo.minRange
+		additional.maxRange = spellinfo.maxRange
 		additional.spellLink = spelllink
 		additional.tooltipData = data
+		additional.originalIconID = spellinfo.originalIconID
 
 		ProcessSpell(tooltip, reg)
 	end
