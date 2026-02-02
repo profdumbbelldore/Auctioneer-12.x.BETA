@@ -289,6 +289,13 @@ end
 
 
 function itemTooltip(tooltip, name, link, itemType, itemId, quality, count)
+
+	if not itemId or type(itemId) ~= "number" then
+        itemId = tonumber(link:match("item:(%d+)"))
+	local itemType = "item"
+    end
+    if not itemId then return end
+	
 	if Enchantrix.Settings.GetSetting("ModTTShow") then
 		if Enchantrix.Settings.GetSetting("ModTTShow") == "never" then
 			return
@@ -671,14 +678,6 @@ end
 -- this WAS also used inside the enchanting/crafting trade window, but that broke when the new tooltip library was added
 
 function enchantTooltip(tooltip, name, link, isItem)
--- ### Emergency Workaround for WoW10.0.x
--- ### Disable enchantTooltip for Retail to get a non-erroring version ASAP
--- ### Obtaining Reagent info will need a major rewrite
--- ### https://gitlab.com/norganna-wow/auctioneer/enchantrix/-/issues/21
--- ### brykrys 27/11/2022
-	if not constants.Classic then return end
--- ###
-
 
 -- TODO - ccox - for items, get the number made!  But what about items with random yield?
 -- TODO - ccox - this really should recursively descend crafted items for true costs not AH prices
@@ -869,29 +868,39 @@ function enchantTooltip(tooltip, name, link, isItem)
 	end
 end
 
-function hookItemTooltip(tipFrame, item, count, name, link, quality)
-	if ((not Enchantrix.Settings.GetSetting('all'))
-		or (not Enchantrix.Settings.GetSetting('TooltipShowReagents'))) then return end
+-- Change the order of arguments here to match what the error log shows
+function hookItemTooltip(tipFrame, name, link, quality, count)
+    -- 1. Argument Correction: 
+    -- The error log shows 'name' actually contains the link, and 'link' contains a number.
+    -- We will check which one is the actual string link.
+    local actualLink = type(link) == "string" and link or name
+    
+    -- 2. Safety check
+    if not actualLink or type(actualLink) ~= "string" then return end
+    if not Enchantrix.Settings.GetSetting('all') then return end
 
-    --Enchantrix.Util.DebugPrintQuick("hookItemTooltip", item, count, name, link, quality )  -- DEBUGGING
+    -- 3. Extract Item ID using our helper
+    local itemId = Enchantrix.Util.GetItemIdFromLink(actualLink)
+    if not itemId then return end
 
-	-- we're getting nil links in here somehow, just return if that happens
-	if (link == nil) then return end
+    -- 4. Set up the tip helper
+    tooltip:SetFrame(tipFrame or _G.GameTooltip)
 
-	tooltip:SetFrame(tipFrame)
-	-- ccox - tooltip:DecodeLink will only work with type "item"
-	local itemType, itemId = tooltip:DecodeLink(link)
+    -- 5. Draw the disenchant data
+    -- We re-normalize the variables for the internal itemTooltip call
+    local cleanName = (type(name) == "string" and not name:find("|H")) and name or ""
+    local cleanCount = tonumber(count) or 1
+    local cleanQuality = tonumber(link) or tonumber(quality) or 0
+    
+    itemTooltip(tooltip, cleanName, actualLink, "item", itemId, cleanQuality, cleanCount)
 
-	if itemType == "item" then
-		name = name or ""
-		-- safety, some other addons pass in strings for count by mistake
-		count = tonumber(count) or 1
-		itemTooltip(tooltip, name, link, itemType, itemId, quality, count)
-		if (Enchantrix.Settings.GetSetting('ShowAllCraftReagents')) then
-			enchantTooltip(tooltip, name, link, true)
-		end
-	end
-	tooltip:ClearFrame(tipFrame)
+    -- 6. Handle Milling/Prospecting
+    if (Enchantrix.Settings.GetSetting('ShowAllCraftReagents')) then
+        enchantTooltip(tooltip, cleanName, actualLink, true)
+    end
+
+    -- 7. Cleanup
+    tooltip:ClearFrame(tipFrame or _G.GameTooltip)
 end
 
 function hookSpellTooltip(tipFrame, link, name, rank)
@@ -930,7 +939,8 @@ function hookTooltip(tipFrame, item, count, name, link, quality)
 
 	tooltip:SetFrame(tipFrame)
 
-	local itemType, itemId = tooltip:DecodeLink(link)
+	local itemType = "item"
+    local itemId = Enchantrix.Util.GetItemIdFromLink(link)
 
 --Enchantrix.Util.DebugPrintQuick("enx tooltip hook called", item, count, name, link, quality, itemType, itemId );
 

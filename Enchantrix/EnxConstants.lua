@@ -1,6 +1,6 @@
 --[[
 	Enchantrix Addon for World of Warcraft(tm).
-	Version: 9.1.BETA.5.15 (OneMawTime)
+	Version: <%version%> (<%codename%>)
 	Revision: $Id$
 	URL: http://enchantrix.org/
 
@@ -384,6 +384,21 @@ const.StaticPrices = {
     [173172] =  500000, -- GEM_ESSERVITUDE
     [173173] =  500000, -- GEM_ESVALOR
 
+	-- DF DE Items
+	[194123] =  500000, -- Chromatic Dust (Enchanting)
+	[194124] =  500000, -- Vibrant Shard (Enchanting)
+	[200113] =  500000, -- Resonant Crystal (Enchanting)
+	
+	-- TWW DE Items
+	[219946] =  500000, -- Storm Dust R1 (Enchanting)
+	[219947] =  500000, -- Storm Dust R2 (Enchanting)
+	[219948] =  500000, -- Storm Dust R3 (Enchanting)
+	[219949] =  500000, -- Gleaming Shard R1 (Enchanting)
+	[219950] =  500000, -- Gleaming Shard R2 (Enchanting)
+	[219951] =  500000, -- Gleaming Shard R3 (Enchanting)
+	[219952] =  500000, -- Refulgent Crystal R1 (Enchanting)
+	[219954] =  500000, -- Refulgent Crystal R2 (Enchanting)
+	[219955] =  500000, -- Refulgent Crystal R3 (Enchanting)
 }
 
 const.DUST = 1
@@ -519,6 +534,22 @@ local SOULDUSTNEW = 172230
 local SACREDSHARD = 172231
 local ETERNALCRYS = 172232
 
+-- DF Items
+local CHROMATICDUST = 194123 -- Chromatic Dust (Enchanting)
+local VIBRANTSHARD = 194124 -- Vibrant Shard (Enchanting)
+local RESONANTCRYSTAL = 200113 -- Resonant Crystal (Enchanting)
+
+-- TWW Items
+local STORMDUSTI = 219946 -- Storm Dust R1 (Enchanting)
+local STORMDUSTII = 219947 -- Storm Dust R2 (Enchanting)
+local STORMDUSTIII = 219948 -- Storm Dust R3 (Enchanting)
+local GLEAMINGSHARDI = 219949 -- Gleaming Shard R1 (Enchanting)
+local GLEAMINGSHARDII = 219950 -- Gleaming Shard R2 (Enchanting)
+local GLEAMINGSHARDIII = 219951 -- Gleaming Shard R3 (Enchanting)
+local REFULGENTCRYSTALRI = 219952 -- Refulgent Crystal R1 (Enchanting)
+local REFULGENTCRYSTALRII = 219954 -- Refulgent Crystal R2 (Enchanting)
+local REFULGENTCRYSTALRIII = 219955 -- Refulgent Crystal R3 (Enchanting)
+
 -- item qualities
 local UNCOMMON = 2
 local RARE = 3
@@ -584,123 +615,146 @@ RILLUSION,
 ILLUSION,
 STRANGE,
 
+-- DF Items
+CHROMATICDUST,
+VIBRANTSHARD,
+RESONANTCRYSTAL,
+
+-- TWW Items
+STORMDUSTI,
+STORMDUSTII,
+STORMDUSTIII,
+GLEAMINGSHARDI,
+GLEAMINGSHARDII,
+GLEAMINGSHARDIII,
+REFULGENTCRYSTALRI,
+REFULGENTCRYSTALRII,
+REFULGENTCRYSTALRIII,
 }
 
 -- the big disenchant table, indexed by [quality][type][level bracket]
 -- and yielding { { reagent type, drop probability, average drop quantity }, ... }
 -- Thanks to Picksell, Wambo, and others for contributing data!
+-- 457 == expected DF upper bounds. 730 == temp TWW upper bounds. -- NoctusMirus
+
 
 const.baseDisenchantTable = {
 	[UNCOMMON] = {
 		[const.WEAPON] = {
-		 ["bounds"] = { 8, 10, 13, 16, 18, 21, 23, 26, 28, 29, 30, 31, 32, 34, 35, 36, 37, 38, 44, 50, 84, 300 },
+		 ["bounds"] = { 8, 10, 13, 16, 18, 21, 23, 26, 28, 29, 30, 31, 32, 34, 35, 36, 37, 38, 44, 50, 84, 300, 457, 730 },
 		 [8]   = { { STRANGE, 0.20, 2.0 }, { LMAGIC, 0.80, 1.5 } },
 		 [10]  = { { STRANGE, 0.20, 3.5 }, { GMAGIC, 0.80, 1.6 } },
 		 [13]  = { { STRANGE, 0.20, 5.0 }, { GMAGIC, 0.80, 2.5 } },
-
+		 
 		 [16]  = { { ILLUSION , 0.2, 1.6 }, { LETERNAL, 0.75, 1.5 }, { SBRILLIANT , 0.05, 1.0 }, },
 		 [18]  = { { ILLUSION , 0.2, 3.5 }, { LETERNAL, 0.75, 2.0 }, { SBRILLIANT , 0.05, 1.0 }, },
 		 [21]  = { { ILLUSION , 0.2, 4.5 }, { LETERNAL, 0.75, 2.5 }, { SBRILLIANT , 0.05, 1.0 }, },
 		 [23]  = { { ILLUSION , 0.2, 4.5 }, { LETERNAL, 0.75, 3.0 }, { SBRILLIANT , 0.05, 1.5 }, },
-
+		 
 		 [26]  = { { RILLUSION, 0.2, 1.5 }, { GETERNAL, 0.75, 1.0 }, { LBRILLIANT , 0.05, 1.0 }, },
 		 [28]  = { { RILLUSION, 0.2, 2.0 }, { GETERNAL, 0.75, 2.0 }, { LBRILLIANT , 0.05, 1.0 }, },
 		 [29]  = { { RILLUSION, 0.2, 3.0 }, { GETERNAL, 0.75, 2.5 }, { LBRILLIANT , 0.05, 1.0 }, },
-
+		 
 		 [30]  = { { ARCANE  , 0.20, 2.5 }, { LPLANAR , 0.75, 2.5 }, { SPRISMATIC , 0.05, 1.0 }, },
 		 [31]  = { { ARCANE  , 0.20, 3.5 }, { GPLANAR , 0.75, 1.5 }, { LPRISMATIC , 0.05, 1.0 }, },
-
+		 
 		 [32]  = { { INFINITE, 0.20, 2.5 }, { LCOSMIC , 0.75, 1.5 }, { SDREAM_SHARD, 0.05, 1.0 }, },
 		 [34]  = { { INFINITE, 0.20, 5.5 }, { GCOSMIC , 0.75, 1.5 }, { DREAM_SHARD , 0.05, 1.0 }, },
-
+	  
 		 [35]  = { { HYPNOTIC, 0.25, 1.5 }, { LCELESTIAL , 0.75, 1.5 }, },   -- no shards from greens in Cataclysm
 		 [36]  = { { HYPNOTIC, 0.25, 3.0 }, { GCELESTIAL , 0.75, 1.5 }, },
-
+		 
 		 [37]  = { { SPIRIT, 0.15, 2.0 }, { MYSTERIOUS , 0.85, 1.0 }, },
 		 [38]  = { { SPIRIT, 0.15, 4.0 }, { MYSTERIOUS , 0.85, 2.0 }, },
-
+		 
 		 [44]  = { { DRAENIC, 1.0, 1.5 } },
-
+		 
 		 [50]  = { {ARKHANA, 1.0, 5.25 } },
-
+		 
 		 [84]  = { {GLOOMDUST, 1.0, 5.5 } },
-
+		 
 		 [300] = { {SOULDUSTNEW, 1.0, 2.3 } },
-
+	  
+		 [457] = { {CHROMATICDUST, 1.0, 2.0 } },  -- DF & TWW numbers probably need adjustment
+		 [700] = { {STORMDUSTI, 1.0, 2.0 } },  -- DF & TWW numbers probably need adjustment
 		 },
 		[const.ARMOR] = {
-		 ["bounds"] = { 8, 10, 13, 16, 18, 21, 23, 26, 28, 29, 30, 31, 32, 34, 35, 36, 37, 38, 44, 50, 84, 300 },
+		 ["bounds"] = { 8, 10, 13, 16, 18, 21, 23, 26, 28, 29, 30, 31, 32, 34, 35, 36, 37, 38, 44, 50, 84, 300, 457, 730 },
 		 [8]   = { { STRANGE, 0.80, 2.0 }, { LMAGIC, 0.20, 1.5 } },
 		 [10]  = { { STRANGE, 0.80, 3.5 }, { GMAGIC, 0.20, 1.6 } },
 		 [13]  = { { STRANGE, 0.80, 5.0 }, { GMAGIC, 0.20, 2.5 } },
-
+	  
 		 [16]  = { { ILLUSION , 0.75, 1.6 }, { LETERNAL, 0.20, 1.5 }, { SBRILLIANT , 0.05, 1.0 }, },
 		 [18]  = { { ILLUSION , 0.75, 3.5 }, { LETERNAL, 0.20, 2.0 }, { SBRILLIANT , 0.05, 1.0 }, },
 		 [21]  = { { ILLUSION , 0.75, 4.5 }, { LETERNAL, 0.20, 2.5 }, { SBRILLIANT , 0.05, 1.0 }, },
 		 [23]  = { { ILLUSION , 0.75, 4.5 }, { LETERNAL, 0.20, 3.0 }, { SBRILLIANT , 0.05, 1.5 }, },
-
+	  
 		 [26]  = { { RILLUSION, 0.75, 1.5 }, { GETERNAL, 0.20, 1.0 }, { LBRILLIANT , 0.05, 1.0 }, },
 		 [28]  = { { RILLUSION, 0.75, 2.0 }, { GETERNAL, 0.20, 2.0 }, { LBRILLIANT , 0.05, 1.0 }, },
 		 [29]  = { { RILLUSION, 0.75, 3.0 }, { GETERNAL, 0.20, 2.5 }, { LBRILLIANT , 0.05, 1.0 }, },
-
+	  
 		 [30]  = { { ARCANE  , 0.75, 2.5 }, { LPLANAR , 0.20, 2.5 }, { SPRISMATIC , 0.05, 1.0 }, },
 		 [31]  = { { ARCANE  , 0.75, 3.5 }, { GPLANAR , 0.20, 1.5 }, { LPRISMATIC , 0.05, 1.0 }, },
-
+	  
 		 [32]  = { { INFINITE, 0.75, 2.5 }, { LCOSMIC , 0.20, 1.5 }, { SDREAM_SHARD, 0.05, 1.0 }, },
 		 [34]  = { { INFINITE, 0.75, 5.5 }, { GCOSMIC , 0.20, 1.5 }, { DREAM_SHARD , 0.05, 1.0 }, },
-
+	  
 		 [35]  = { { HYPNOTIC, 0.75, 1.5 }, { LCELESTIAL , 0.25, 1.5 }, },   -- no shards from greens in Cataclysm
 		 [36]  = { { HYPNOTIC, 0.75, 3.0 }, { GCELESTIAL , 0.25, 1.5 }, },
-
+	  
 		 [37]  = { { SPIRIT, 0.85, 2.0 }, { MYSTERIOUS , 0.15, 1.0 }, },
 		 [38]  = { { SPIRIT, 0.85, 4.0 }, { MYSTERIOUS , 0.15, 2.0 }, },
-
+	  
 		 [44]  = { { DRAENIC, 1.0, 2.5 } },
-
+	  
 		 [50]  = { {ARKHANA, 1.0, 5.5 } },
-
+	  
 		 [84]  = { {GLOOMDUST, 1.0, 5.5 } },
-
+		 
 		 [300] = { {SOULDUSTNEW, 1.0, 2.3 } },
-
+	  
+		 [457] = { {CHROMATICDUST, 1.0, 2.0 } },  -- DF & TWW numbers probably need adjustment
+		 [700] = { {STORMDUSTI, 1.0, 2.0 } },  -- DF & TWW numbers probably need adjustment
 		},
 	   },
 	   [RARE] = {
 		   -- weapon lookups will fall back to the armor table
 		[const.ARMOR] = {
-		 ["bounds"] = { 13, 18, 23, 28, 29, 30, 31, 32, 34, 35, 36, 37, 38, 44, 50, 84, 300 },
+		 ["bounds"] = { 13, 18, 23, 28, 29, 30, 31, 32, 34, 35, 36, 37, 38, 44, 50, 84, 300, 457, 730 },
 		 [13]  = { { GMAGIC,      	1.00, 2.0 } },
 		 [18]  = { { SBRILLIANT,      1.00, 1.5 } },
 		 [23]  = { { SBRILLIANT,      0.80, 2.25 }, { LBRILLIANT, 0.20, 1.5 } },
 		 [28]  = { { LBRILLIANT,      0.80, 1.5 },  { GETERNAL, 0.20, 1.5 }, },
 		 [29]  = { { LBRILLIANT,      0.80, 2.0 },  { GETERNAL, 0.20, 2.5 }, },
-
+	  
 		 [30]  = { { SPRISMATIC,      1.00, 1.0 } },
 		 [31]  = { { LPRISMATIC,      1.00, 1.0 } },
-
+	  
 		 [32]  = { { SDREAM_SHARD,    1.00, 1.0 } },
 		 [34]  = { { DREAM_SHARD ,    1.00, 1.0 } },
-
+	  
 		 [35]  = { { SHEAVENLY_SHARD, 1.00, 1.0 } },
 		 [36]  = { { HEAVENLY_SHARD,  1.00, 1.0 } },
-
+	  
 		 [37]  = { { SETHERAL,        1.00, 1.0 } },
 		 [38]  = { { ETHERAL,         1.00, 1.0 } },
-
+	  
 		 [44]  = { { DRAENIC, 0.85, 10.0 }, { LUMINOUS , 0.15, 1.0 }, },
-
+	  
 		 [50]  =  { { LEYLIGHT_SHARD, 1.0, 1.0 } },
-
+	  
 		 [84]  =  { { UMBRASHARD, 0.5, 1.3 }, { GLOOMDUST, 0.5, 1.5, }, },
-
+	  
 		 [300] =  { { SACREDSHARD, 0.5, 2.8 }, { SOULDUSTNEW, 0.5, 3.0, }, },
-
+	  
+		 [457] = { {VIBRANTSHARD, 1.0, 2.0 } },  -- DF & TWW numbers probably need adjustment
+		 [700] = { {GLEAMINGSHARDI, 1.0, 2.0 } },  -- DF & TWW numbers probably need adjustment
 		},
 	   },
 	   [EPIC] = {
 		   -- weapon lookups will fall back to the armor table
 		[const.ARMOR] = {
-		 ["bounds"] = { 27, 29, 31, 33, 35, 37, 39, 41, 47, 57, 147, 300 },
+		 ["bounds"] = { 27, 29, 31, 33, 35, 37, 39, 41, 47, 57, 147, 300, 457, 730 },
 		 [27]  = { { GETERNAL,  1, 2.0 } },
 		 [29]  = { { LBRILLIANT,  0.60, 4.0 }, { GETERNAL, 0.25, 3.5 }, { RILLUSION, 0.15, 4.5 }, },
 		 [31]  = { { VOID,        1.00, 1.0 } },
@@ -711,11 +765,13 @@ const.baseDisenchantTable = {
 		 [41] = { { SHA_CRYSTAL, 1.00, 1.0 } },
 		 [47] = { { TEMPORAL,    1.00, 1.0 } },
 		 [57] =  { {CHAOS_CRYSTAL, 1.00, 1.0 } },
-
+	  
 		 [147] =  { {VEILEDCRYSTAL, 0.7, 1.0 }, { UMBRASHARD, 0.3, 1, }, },
-
+	  
 		 [300] =  { {ETERNALCRYS, 0.5, 2.1 }, { SACREDSHARD, 0.5, 0.7, }, },
-
+	  
+		 [457] = { {RESONANTCRYSTAL, 1.0, 2.0 } },  -- DF & TWW numbers probably need adjustment
+		 [700] = { {REFULGENTCRYSTALRI, 1.0, 2.0 } },  -- DF & TWW numbers probably need adjustment
   },
  },
 }

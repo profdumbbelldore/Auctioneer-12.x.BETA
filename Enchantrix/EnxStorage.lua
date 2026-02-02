@@ -1,6 +1,6 @@
 ﻿--[[
 	Enchantrix Addon for World of Warcraft(tm).
-	Version: 9.1.BETA.5.15 (OneMawTime)
+	Version: <%version%> (<%codename%>)
 	Revision: $Id$
 	URL: http://enchantrix.org/
 
@@ -207,10 +207,23 @@ end
 function getItemProspects(link)
     if (constants.Classic and constants.Classic < 2) then return end
 
-	local itemType, itemID = tooltip:DecodeLink(link)
-	if (itemType ~= "item") then return end
+	local itemID
+    if type(link) == "number" then
+        itemID = link
+    elseif type(link) == "string" then
+        -- If it's a string, try to extract the ID from the link
+        itemID = tonumber(link:match("item:(%d+)"))
+    end
 
-	return Enchantrix.Constants.ProspectableItems[ itemID ];
+    if not itemID then return end
+	
+	-- Dual Table Check -- Used for supporting the DF+ Expacs
+	local _,_,_,_,_,_,_,_,_,_,_,_,_,_,a,_ = C_Item.GetItemInfo(itemID)
+	if a < 9 then  -- 9 == Dragonflight's expansion
+		return Enchantrix.Constants.ProspectableItems[tonumber(itemID)]
+	else  -- we're dealing with DF+ stuff
+		return Enchantrix.Constants.DFPProspectableItems[tonumber(itemID)]
+	end
 end
 
 
@@ -243,14 +256,27 @@ end
 function getItemMilling(link)
     if (constants.Classic and constants.Classic < 3) then return end
 
-	local itemType, itemID = tooltip:DecodeLink(link)
-	if (itemType ~= "item") then return end
+	local itemID
+    if type(link) == "number" then
+        itemID = link
+    elseif type(link) == "string" then
+        -- If it's a string, try to extract the ID from the link
+        itemID = tonumber(link:match("item:(%d+)"))
+    end
 
+    if not itemID then return end
+
+	-- Dual Table Check -- Used for supporting the DF+ Expacs
 	local resultGroup = Enchantrix.Constants.MillableItems[ itemID ];
+	if not resultGroup then resultGroup = Enchantrix.Constants.DFPMillableItems[ itemID ] end
 	if not resultGroup then
 		return nil
 	end
-	return Enchantrix.Constants.MillGroupYields[ resultGroup ];
+
+	-- Dual Table Check -- Used for supporting the DF+ Expacs
+	local millyields = Enchantrix.Constants.MillGroupYields[ resultGroup ]
+	if not millyields then millyields= Enchantrix.Constants.DFPMillGroupYields[ resultGroup ] end
+	return millyields
 end
 
 

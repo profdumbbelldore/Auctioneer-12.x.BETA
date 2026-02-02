@@ -35,7 +35,9 @@ EnxCommand.lua
 EnxConfig.lua
 EnxConstants.lua
 EnxConstantsInscription.lua
+EnxConstantsInscriptionDFPlus.lua
 EnxConstantsJewelcrafting.lua
+EnxConstantsJewelcraftingDFPlus.lua
 EnxStorage.lua
 EnxTooltip.lua
 EnxUtil.lua

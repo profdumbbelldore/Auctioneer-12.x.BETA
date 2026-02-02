@@ -728,6 +728,9 @@ function Enchantrix.Util.GetIType(link)
 	end
 
 	local class = const.InventoryTypes[itemEquipLoc] or 0
+	
+	-- NoctusMirus Note: this fixes PROFESSION GEAR (GetItemInfo part 6 == profession && 9 == INVTYPE_PROFESSION_GEAR)
+	if class == 0 and (itemType and itemType == "Profession") and (itemEquipLoc and itemEquipLoc == "INVTYPE_PROFESSION_GEAR") then class = const.ARMOR end
 
 	if itemRarity < 2 or not (class and (class == const.WEAPON or class == const.ARMOR)) then
 		--Enchantrix.Util.DebugPrint("GetIType", ENX_INFO, "Item not weapon or armor", "for: " .. itemRarity .. ", " .. class .. ", ".. itemType ..  ", ".. itemSubType ..  ", ".. itemEquipLoc ..  ", " ..link)
@@ -850,12 +853,19 @@ function Enchantrix.Util.InscriptionSkillRequiredForItem(link)
 		--Enchantrix.Util.DebugPrintQuick( "nil item from link", link )
 		return 0
 	end
+	
+	-- check predf then df+
 	local resultBracket = Enchantrix.Constants.MillableItems[item];
+	if not resultBracket then resultBracket = Enchantrix.Constants.DFPMillableItems[item] end
 	if (not resultBracket) then
 		--Enchantrix.Util.DebugPrintQuick( "no mill result bracket from link", link )
 		return 0
 	end
-	return Enchantrix.Constants.MillingSkillRequired[resultBracket];
+
+	-- check predf then df+
+	local millReturn = Enchantrix.Constants.MillingSkillRequired[resultBracket];
+	if not millReturn then millReturn = Enchantrix.Constants.DFPMillingSkillRequired[resultBracket] end
+	return millReturn
 end
 
 function Enchantrix.Util.JewelCraftSkillRequiredForItem(link)
@@ -869,6 +879,7 @@ function Enchantrix.Util.JewelCraftSkillRequiredForItem(link)
 		return 0
 	end
 	local minLevel = Enchantrix.Constants.ProspectMinLevels[item];
+	if not minLevel then minLevel = Enchantrix.Constants.ProspectDFPMinLevels[item]; end
 	return minLevel;
 end
 
@@ -1105,6 +1116,13 @@ function Enchantrix.Util.DebugPrint(mType, mLevel, mTitle, ...)
 	debug(message, mType, mTitle, nil, mLevel)
 end
 
+-- Modern 12.0 Helper: Safely extracts Item ID from long links
+function Enchantrix.Util.GetItemIdFromLink(link)
+    if not link then return nil end
+    -- This pattern works for both old short links and new long 12.0 links
+    local itemId = link:match("item:(%d+)")
+    return tonumber(itemId)
+end
 -- when you just want to print a message and don't care about the rest
 function Enchantrix.Util.DebugPrintQuick(...)
 	printQuick(...)
