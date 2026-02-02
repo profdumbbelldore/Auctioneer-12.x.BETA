@@ -1,7 +1,7 @@
 ## Title: Babylonian |cff224477(lib)
 ## Notes: Provides the facilites to support languages other than those supported by the client locale.
 ##
-## Interface: 80205
+## Interface: 110205
 ## LoadOnDemand: 0
 ##
 ## Version: <%version%> (<%codename%>)
@@ -9,7 +9,7 @@
 ## Author: Norganna's AddOns
 ## X-Part-Of: Libraries
 ## X-Category: Library
-## X-Max-Interface: 80100
+## X-Max-Interface: 110205
 ## X-URL: http://zip.norganna.org/libs/Babylonian/
 ## X-Feedback: http://forums.norganna.org
 ##

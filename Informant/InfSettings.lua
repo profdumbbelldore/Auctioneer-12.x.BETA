@@ -1,7 +1,7 @@
 --[[
 	Informant - An addon for World of Warcraft that shows pertinent information about
 	an item in a tooltip when you hover over the item in the game.
-	Version: 9.1.BETA.5.15 (OneMawTime)
+	Version: <%version%> (<%codename%>)
 	Revision: $Id$
 	URL: http://auctioneeraddon.com/dl/Informant/
 
@@ -128,8 +128,14 @@ local settingDefaults = {
 	['show-binding'] = false,
 	['altchatlink-tooltip'] = false,
 
--- leave this option off until we have real data to test with
--- enable only for dev testing
+	-- addons compartment & minimap
+	['addoncompartment'] = true,
+	['miniicon.enable'] = true,
+	['miniicon.angle'] = 120,
+	['miniicon.distance'] = 12,
+
+	-- leave this option off until we have real data to test with
+	-- enable only for dev testing
 	['show-crafted'] = false,
 }
 
@@ -274,10 +280,22 @@ local function setter(setting, value)
 	end
 
 	if (a == "sideIcon") and Informant.SideIcon then
--- not implemented yet
---		Informant.SideIcon.Update()
+		-- not implemented yet
+		--		Informant.SideIcon.Update()
 	end
-
+	
+	-- if updating the minimap icon settings
+	if a == "miniicon" then
+		if b =="enable" then
+			if not Informant.Settings.GetSetting("miniicon.enable") then
+				miniIcon:Hide()
+				return
+			end
+			miniIcon:Show()
+		elseif b == "angle" then
+			miniIcon.Reposition(angle)
+		end
+	end
 end
 
 function lib.SetSetting(...)
@@ -291,7 +309,7 @@ end
 local function getter(setting)
 	if (not InformantConfig) then InformantConfig = {} end
 	if not setting then return end
-
+	
 	local a,b,c = strsplit(".", setting)
 	if (a == 'profile') then
 		if not b then -- setting == 'profile'
@@ -341,7 +359,7 @@ local function makeGuiConfig()
 	local function selectorLocales()
 		return localedropdown
 	end
-
+	
   	gui:AddCat("Informant")	-- TODO - localize me!
 
 	id = gui:AddTab("General")
@@ -411,7 +429,7 @@ local function makeGuiConfig()
 	--Copied from ADV
 	id = gui:AddTab("Profiles")
 
-	gui:AddControl(id, "Header",     0,    _TRANS('INF_Interface_SetupProfile')) --"Setup, Configure and Edit Profiles"
+	gui:AddControl(id, "Header",     0,    _TRANS('INF_Interface_SetupProfiles')) --"Setup, Configure and Edit Profiles"
 
 	gui:AddControl(id, "Subhead",    0,    _TRANS('INF_Interface_ActivateProfile')) --"Activate a current profile"
 	gui:AddControl(id, "Selectbox",  0, 1, "profile.profiles", "profile")
@@ -450,6 +468,23 @@ local function makeGuiConfig()
 		"You can delete a profile when you don't want to use it anymore, or you want to create it from scratch again with default values. Deleting a profile will also affect any other characters who are using the profile."
 	)
 
+	id = gui:AddTab("Access") -- section for options access methods
+	-- slidebar is handled in slidebar options and skipped here
+	-- covered is minimap, and, when available, the blizzard addons compartment
+	-- both starters are pulled form Enchantrix
+	gui:AddControl(id, "Header",     0,    _TRANS('INF_Access_Config_Options')) -- "How would you like to access these options?"
+
+	gui:AddControl(id, "Subhead",    0,    _TRANS("INF_GuiMinimapOptions")) -- show in the minimap
+	gui:AddControl(id, "Checkbox",   0, 1, "miniicon.enable", _TRANS("INF_GuiMinimapShowButton")) -- give a checkbox window for this (start enabled as it's new)
+	gui:AddControl(id, "Slider",     0, 1, "miniicon.angle", 0, 360, 1, _TRANS("INF_GuiMinimapButtonAngle")) -- create the angle slider
+
+
+	if AddonCompartmentFrame then  -- variable appears built into wow
+		gui:AddControl(id, "Subhead",    0,    _TRANS('INF_GuiAddOnsCompartmentOptions')) -- "Show in Blizzard's AddOnCompatment:"
+		gui:AddControl(id, "Checkbox",   0, 1, "addoncompartment", _TRANS('INF_GuiAddOnsCompartmentEnable')) -- give a checkbox window for this (start enabled as it's new)
+		gui:AddTip(id, _TRANS("INF_GuiAddOnsCompartmentWarning"))
+	end
+
 	makeGuiConfig = nil
 end
 
@@ -486,4 +521,3 @@ end
 function debugPrint(message, title, errorCode, level)
 	return Informant.DebugPrint(message, "InfSettings", title, errorCode, level)
 end
-
