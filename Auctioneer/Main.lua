@@ -1,3 +1,6 @@
+local addonName, _ = ... -- return addon name dynamically
+_G.Auctioneer = _G.Auctioneer or {}
+local Auctioneer = _G.Auctioneer
 local private = CreateFrame("Frame")
 
 if not Stubby then
@@ -10,7 +13,7 @@ end
 
 local AUC_VERSION = "<%version%>"
 if AUC_VERSION:byte(1) == 60 then -- 60 = '<'
-	AUC_VERSION = "12.0 Beta"
+	AUC_VERSION = "8.3.DEV"
 end
 
 local parts = {}
@@ -117,6 +120,7 @@ function private:Timeslice(whole)
 	return ts
 end
 
+--[[ setting adjusted due to manifest conflict
 -- This is all the outside world is allowed to access.
 local major, minor, release, revision = strsplit(".", AUC_VERSION)
 private.Auctioneer = {
@@ -126,39 +130,62 @@ private.Auctioneer = {
 	RelVersion = release,
 	Revision = revision,
 }
+]]--
+local major, minor, release, revision = strsplit(".", AUC_VERSION)
+Auctioneer.Version = AUC_VERSION
+Auctioneer.MajorVersion = major
+Auctioneer.MinorVersion = minor
+Auctioneer.RelVersion = release
+Auctioneer.Revision = revision
 
 function private:Booted()
-	private.Auctioneer.Booted = nil
+	-- "private." removed from function for manifest compatibility; all items: private.Auctioneer -> Auctioneer
+	Auctioneer.Booted = nil
 
-	private.Auctioneer.Trigger = private.Trigger
-	private.Auctioneer.AuctionKey = private.AuctionKey
-	private.Auctioneer.Timeslice = private.Timeslice
+	Auctioneer.Trigger = private.Trigger
+	Auctioneer.AuctionKey = private.AuctionKey
+	Auctioneer.Timeslice = private.Timeslice
 
-	private.Auctioneer.Stat = parts.Statistics.NewStat
-	private.Auctioneer.Point = parts.Statistics.NewPoint
-	private.Auctioneer.Points = parts.Statistics.NewPoints
-	private.Auctioneer.Statistics = parts.Statistics.Stats
+	Auctioneer.Stat = parts.Statistics.NewStat
+	Auctioneer.Point = parts.Statistics.NewPoint
+	Auctioneer.Points = parts.Statistics.NewPoints
+	Auctioneer.Statistics = parts.Statistics.Stats
 
-	private.Auctioneer.Item = parts.Items.NewItem
+	Auctioneer.Item = parts.Items.NewItem
 
-	private.Auctioneer.GUI = parts.GUI.Components
-	private.Auctioneer.Money = parts.GUI.Money
+	Auctioneer.GUI = parts.GUI.Components
+	Auctioneer.Money = parts.GUI.Money
 
-	private.Auctioneer.Dump = parts.Internal.Dump
-	private.Auctioneer.DumpOne = parts.Internal.DumpOne
-	private.Auctioneer.ItemKeyKey = parts.Internal.ItemKeyKey
-	private.Auctioneer.ItemKeyString = parts.Internal.ItemKeyString
-	private.Auctioneer.ItemKeyFromLink = parts.Internal.ItemKeyFromLink
-	private.Auctioneer.ItemKeyFromString = parts.Internal.ItemKeyFromString
+	Auctioneer.Dump = parts.Internal.Dump
+	Auctioneer.DumpOne = parts.Internal.DumpOne
+	Auctioneer.ItemKeyKey = parts.Internal.ItemKeyKey
+	Auctioneer.ItemKeyString = parts.Internal.ItemKeyString
+	Auctioneer.ItemKeyFromLink = parts.Internal.ItemKeyFromLink
+	Auctioneer.ItemKeyFromString = parts.Internal.ItemKeyFromString
 
 	private.booted = true
 end
 
-private.Auctioneer.Boot = private.Boot
-private.Auctioneer.Booted = private.Booted
-private.Auctioneer.Const = private.Const
-private.Auctioneer.Module = private.Module
+-- "private." removed from the next block for manifest compatibility; all items: private.Auctioneer -> Auctioneer
+Auctioneer.Boot = private.Boot
+Auctioneer.Booted = private.Booted
+Auctioneer.Const = private.Const
+Auctioneer.Module = private.Module
 
+--[[ commented out due to manifest conflict
 -- Expose the global Auctioneer object.
 Auctioneer = {}
 setmetatable(Auctioneer, {__index = private.Auctioneer})
+]]--
+
+loadedOrLoading, loaded = C_AddOns.IsAddOnLoaded(addonName)
+if loadedOrLoading then
+    -- Fix: Ensure Locale exists before calling OnLoad
+    if Auctioneer.Locale and Auctioneer.Locale.OnLoad then
+        Auctioneer.Locale.OnLoad() 
+    else
+        -- If it doesn't exist yet, we'll let the specific Locale file 
+        -- handle its own loading when it gets parsed by the game engine.
+        print("Auctioneer: Locale not yet initialized, skipping early load.")
+    end
+end
