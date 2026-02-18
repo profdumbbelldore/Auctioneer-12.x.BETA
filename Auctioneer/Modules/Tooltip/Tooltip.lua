@@ -56,6 +56,9 @@ function Module:DisplayTooltip(type, tooltip, tip, ...)
 		end
 	end
 
+	if not itemKey then 
+    return 
+end
 	if not AuctioneerData.itemHasLevel[itemKey.itemID] then
 		-- We have never even seen this item
 		tooltip:AddLine("Never seen at auction")

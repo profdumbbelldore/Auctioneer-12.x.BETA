@@ -179,13 +179,20 @@ function Internal:ItemKeyString(itemKey)
 end
 
 function Internal:ItemKeyFromLink(link)
+	if not link then return nil end
+
 	local linkType, linkOptions, name = LinkUtil.ExtractLink(link)
+
+	if not linkOptions then return nil end
+
 	local linkBits = {strsplit(":", linkOptions)}
 
 	if linkType == "battlepet" then
 		-- 82800 is a cage.
 		local cageID = 82800
 		local speciesID = tonumber(linkBits[1])
+		if not speciesID then return nil end -- Safety check
+		
 		return C_AuctionHouse.MakeItemKey(cageID, 0, 0, speciesID)
 	end
 

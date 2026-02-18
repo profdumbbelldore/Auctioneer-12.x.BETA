@@ -113,7 +113,6 @@ function private.ProcessItem(tooltip, reg)
 		ProcessCallbacks(reg, "extrashow", tooltip, extraTip)
 	end
 	if tooltip:IsShown() and MerchantFrame and MerchantFrame:IsShown() then
-        -- This forces the tooltip to recognize the manually added lines
         tooltip:Show() 
         
         -- Optional: Force a height update if the box looks too small
@@ -487,13 +486,18 @@ do -- ExtraTip CLASS
 		if not tooltip or self.embedMode then 
         		return 
     		end
-		if IsProtected(tooltip:GetOwner()) then self:Release() return end
-		if self.parent then pcall(function() self:SetParentClamp(0) end) end
-		self.parent = tooltip
-		self:SetParent(tooltip)
-		self:SetOwner(tooltip, "ANCHOR_NONE")
-		self:ClearAllPoints()
-		pcall(function() self:SetPoint("TOPRIGHT", tooltip, "BOTTOMRIGHT") end)
+		local owner = tooltip.GetOwner and tooltip:GetOwner()
+    		if owner and IsProtected(owner) then 
+        		self:Release() 
+        	return 
+    	end
+
+    		if self.parent then pcall(function() self:SetParentClamp(0) end) end
+    		self.parent = tooltip
+    		self:SetParent(tooltip)
+    		self:SetOwner(tooltip, "ANCHOR_NONE")
+    		self:ClearAllPoints()
+    		pcall(function() self:SetPoint("TOPRIGHT", tooltip, "BOTTOMRIGHT") end)
 	end
 
 	function class:Release()
@@ -524,9 +528,11 @@ do -- ExtraTip CLASS
 		local p = self.parent
 		if not p or not p:IsShown() or InCombatLockdown() or (p.IsProtected and p:IsProtected()) then return end
 		pcall(function()
-			if h and h > 0 then
+			local safeH = tonumber(h) or 0
+        		local parentH = p:GetHeight() or 0
+			if safeH > 0 then
 				local l, r, t, b = p:GetClampRectInsets()
-				p:SetClampRectInsets(l or 0, r or 0, t or 0, (b or 0) + (p:GetHeight() or 0) + h)
+				p:SetClampRectInsets(l or 0, r or 0, t or 0, (b or 0) + parentH + safeH)
 			else p:SetClampRectInsets(0, 0, 0, 0) end
 		end)
 	end
@@ -556,26 +562,26 @@ do -- ExtraTip CLASS
 		if self.inMatchSize then return end
 		local p = self.parent
 		
-		-- 2. FORBIDDEN CHECK
-		if not p or not p:IsShown() then return end
-		if (p.IsForbidden and p:IsForbidden()) or (p.IsProtected and p:IsProtected()) then 
+		--FORBIDDEN CHECK
+		if not p or not p:IsShown() or (p.IsForbidden and p:IsForbidden()) or (p.IsProtected and p:IsProtected()) then 
 			return 
 		end
 
 		self.inMatchSize = true
 		pcall(function()
-			local pw, w = p:GetWidth() or 0, self:GetWidth() or 0
+			local pw = tonumber(p:GetWidth()) or 0
+        		local w = tonumber(self:GetWidth()) or 0
 			
 			if pw > 20 then
-				-- One-way sync: ExtraTip follows Blizzard
-				if force or abs(pw - w) > 0.5 then
+				--ExtraTip follows Blizzard
+				if force or math.abs(pw - w) > 0.5 then
 					self:SetWidth(pw)
 					fixRight(self, pw)
 				end
 
-				-- Two-way sync: Blizzard follows ExtraTip (Only if 100% safe)
+				--Blizzard follows ExtraTip
 				local target = math.max(pw, w)
-				if force or abs(pw - target) > 0.5 then
+				if force or math.abs(pw - target) > 0.5 then
 					p:SetWidth(target)
 					fixRight(p, target)
 				end
