@@ -116,8 +116,21 @@ function private.ProcessItem(tooltip, reg)
         tooltip:Show() 
         
         -- Optional: Force a height update if the box looks too small
-        local width, height = tooltip:GetSize()
+        local width = tonumber(tooltip:GetWidth()) or 0
+local height = tonumber(tooltip:GetHeight()) or 0
+
+-- Check if math is allowed on these values (sometimes tonumber isn't enough)
+local ok = pcall(function() return height + 0 end)
+if not ok then
+    height = 0
+    width = 0
+end
+	local isTallEnough = false
+pcall(function() if height and height > 0 then isTallEnough = true end end)
+
+if isTallEnough then
         tooltip:SetSize(width, height + 20) 
+    end
     end
 end
 
@@ -571,6 +584,7 @@ do -- ExtraTip CLASS
 		pcall(function()
 			local pw = tonumber(p:GetWidth()) or 0
         		local w = tonumber(self:GetWidth()) or 0
+			local d = pw -w
 			
 			if pw > 20 then
 				--ExtraTip follows Blizzard
