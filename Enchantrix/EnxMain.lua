@@ -92,14 +92,21 @@ function addonLoaded(hookArgs, event, addOnName)
 
 
 	-- Call AddonLoaded for other objects
-	Enchantrix.Storage.AddonLoaded() -- Sets up saved variables so should be called first
-	Enchantrix.Command.AddonLoaded()
-	Enchantrix.Config.AddonLoaded()
-	Enchantrix.Locale.AddonLoaded()
-	Enchantrix.Tooltip.AddonLoaded()
-	Enchantrix.AutoDisenchant.AddonLoaded()
-	Enchantrix.MiniIcon.AddonLoaded()
+	local subModules = {
+    "Storage", "Command", "Config", "Locale", 
+    "Tooltip", "AutoDisenchant", "MiniIcon"
+}
 
+for _, moduleName in ipairs(subModules) do
+    local module = Enchantrix[moduleName]
+    -- Check if the module table exists AND the AddonLoaded function is ready
+    if module and type(module.AddonLoaded) == "function" then
+        module.AddonLoaded()
+    else
+        -- If it's nil, we log it to the console so you know which file is slow
+        -- print("|cffff0000Enchantrix Warning:|r " .. moduleName .. " module not ready yet.")
+    end
+end
 	Enchantrix.Revision = Enchantrix.Util.GetRevision("$Revision$")
 	for name, obj in pairs(Enchantrix) do
 		if type(obj) == "table" then

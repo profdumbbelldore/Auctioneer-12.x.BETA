@@ -624,16 +624,21 @@ local function getReagentsFromTooltip(frame)
 	local reagents
 	-- Find reagents line ("Reagents: ...")
 	for i = 1, nLines do
-		local text = _G[frameName.."TextLeft"..i]:GetText()
-
-		-- text:find("Reagents: (.+)")
-		local _, _, r = text:find(_ENCH('PatReagents'))
-		if r then
-			reagents = r
-			--Enchantrix.Util.DebugPrintQuick("matched reagents line ", reagents )
-			break
-		end
-	end
+    local line = _G[frameName.."TextLeft"..i]
+    local rawText = line and line:GetText()
+    
+    if rawText then
+        local text = "" .. tostring(rawText)
+        local ok, _, _, r = pcall(function() 
+            return text:find(_ENCH('PatReagents')) 
+        end)
+        
+        if ok and r then
+            reagents = r
+            break
+        end
+    end
+end
 	if not reagents then return end
 
 	local reagentList = {}
