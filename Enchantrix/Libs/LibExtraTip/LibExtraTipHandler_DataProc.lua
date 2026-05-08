@@ -214,7 +214,7 @@ local function GenerateGatherdata()
 		GetMerchantItem = function(reg, getterArgs)
 			local index = getterArgs[1]
 			local additional = reg.additional
-			local _,_,p,q,na,cu,ec = GetMerchantItemInfo(index)
+			local _,_,p,q,na,cu,ec = C_MerchantFrame.GetItemInfo(index)
 			additional.quantity = q
 			additional.event = "SetMerchantItem"
 			additional.eventIndex = index
