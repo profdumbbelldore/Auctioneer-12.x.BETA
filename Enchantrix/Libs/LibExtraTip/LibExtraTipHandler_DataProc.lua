@@ -185,7 +185,6 @@ local function GenerateGatherdata()
 	local GetContainerItemInfo = C_Container.GetContainerItemInfo
 	local GetInventoryItemLink = GetInventoryItemLink
 	local GetInventoryItemCount = GetInventoryItemCount
-	local GetRecipeFixedReagentItemLink = C_TradeSkillUI.GetRecipeFixedReagentItemLink
 	local GetInboxItemInfo = GetInboxItem -- local name changed to avoid conflict with Getter name
 	local GetSendMailItemInfo = GetSendMailItem
 	local GetTradePlayerItemInfo = GetTradePlayerItemInfo
