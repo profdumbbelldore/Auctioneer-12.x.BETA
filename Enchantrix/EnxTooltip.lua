@@ -36,7 +36,6 @@ local tooltipFormat	-- Enchantrix.Tooltip.Format
 
 -- Local functions
 local itemTooltip
-local enchantTooltip
 local hookItemTooltip, hookSpellTooltip
 local callbackAltChatLinkTooltip
 
@@ -289,6 +288,14 @@ end
 
 
 function itemTooltip(tooltip, name, link, itemType, itemId, quality, count)
+
+	if not link or not link:find("item:") then 
+        -- If it's an enchant or spell, handle it elsewhere or return
+        if link and (link:find("enchant:") or link:find("spell:")) then
+            return enchantTooltip(tooltip, name, link, false)
+        end
+        return 
+    end
 
 	if not itemId or type(itemId) ~= "number" then
         itemId = tonumber(link:match("item:(%d+)"))
@@ -575,46 +582,35 @@ end
 
 
 -- using the Recipe APIs
-local function getReagentsFromTradeFrame(recipe)
+local function getReagentsFromRecipe(recipe)
 	local reagentList = {}
-    local numReagents = 0
-
-    if (constants.Classic) then
-        numReagents = GetTradeSkillNumReagents(recipe)
-    else
-        numReagents = C_TradeSkillUI.GetRecipeNumReagents(recipe)
-    end
-	-- Enchantrix.Util.DebugPrintQuick("reagents count ", numReagents )	-- DEBUGGING
-
-	if (not numReagents) then
-		return nil
-	end
-
-	for i = 1, numReagents do
-        local link = nil
-        if (constants.Classic) then
-            link = GetTradeSkillReagentItemLink(recipe, i);
-        else
-            link = C_TradeSkillUI.GetRecipeReagentItemLink(recipe, i);
-        end
-		-- Enchantrix.Util.DebugPrintQuick("reagent ", i, link )	-- DEBUGGING
-		if link then
-			local hlink = link:match("|H([^|]+)|h")
-            local reagentCountNeeded = 0
-            if (constants.Classic) then
-                -- Enchantrix.Util.DebugPrintQuick("reagent info ", GetTradeSkillReagentInfo(recipe, i) )	-- DEBUGGING
-                local _, _, reagentCountNeededL, _ = GetTradeSkillReagentInfo(recipe, i)
-                reagentCountNeeded = reagentCountNeededL
-            else
-                -- Enchantrix.Util.DebugPrintQuick("reagent info ", C_TradeSkillUI.GetRecipeReagentInfo(recipe, i) )	-- DEBUGGING
-                local _, _, reagentCountNeededL, _ = C_TradeSkillUI.GetRecipeReagentInfo(recipe, i)
-                reagentCountNeeded = reagentCountNeededL
-            end
-			table.insert(reagentList, {hlink, reagentCountNeeded})
+	local numReagents = 0
+	
+	if C_TradeSkillUI and C_TradeSkillUI.GetRecipeNumReagents then
+		numReagents = C_TradeSkillUI.GetRecipeNumReagents(recipe)
+		
+		for i = 1, numReagents do
+			local reagentData = C_TradeSkillUI.GetRecipeReagentInfo(recipe, i)
+			if reagentData and reagentData.name then
+				-- Insert into table using the format the rest of Enx expects: {name, count}
+				table.insert(reagentList, { reagentData.name, reagentData.reagentCount or 1 })
+			end
+		end
+	elseif GetRecipeNumReagents then
+		-- Fallback for older clients/classic if applicable
+		numReagents = GetRecipeNumReagents(recipe)
+		for i = 1, numReagents do
+			local name, _, count = GetRecipeReagentInfo(recipe, i)
+			if name then
+				table.insert(reagentList, {name, count})
+			end
 		end
 	end
 
-	return reagentList
+	if numReagents > 0 then
+		return reagentList
+	end
+	return nil
 end
 
 -- NOTE - ccox - to match non enchants, I'd need to search for "Requires (.+)"
@@ -682,7 +678,17 @@ end
 -- this can be used by non enchanters when clicking on an enchant tooltip
 -- this WAS also used inside the enchanting/crafting trade window, but that broke when the new tooltip library was added
 
-function enchantTooltip(tooltip, name, link, isItem)
+enchantTooltip = function(tooltip, name, link, isItem)
+
+	if not Enchantrix or not Enchantrix.Settings or not Enchantrix.Settings.GetSetting then 
+        return 
+    end
+    
+    if (not Enchantrix.Settings.GetSetting('all')) then return end
+
+    local lineIndex
+    local properties
+    local isEnchant = false
 
 -- TODO - ccox - for items, get the number made!  But what about items with random yield?
 -- TODO - ccox - this really should recursively descend crafted items for true costs not AH prices
@@ -757,11 +763,11 @@ function enchantTooltip(tooltip, name, link, isItem)
             end
 
             if tradeIndex then
-                reagentList = getReagentsFromTradeFrame( recipes[tradeIndex] )
-            else
-                -- if all else fails
-                reagentList = getReagentsFromTooltip(frame)
-            end
+                reagentList = getReagentsFromRecipe( recipes[tradeIndex] )
+	else
+		-- if all else fails
+		reagentList = getReagentsFromTooltip(frame)
+		end
         end
 
 		if not reagentList or (#reagentList < 1) then
@@ -875,36 +881,46 @@ end
 
 -- Change the order of arguments here to match what the error log shows
 function hookItemTooltip(tipFrame, name, link, quality, count)
-    -- 1. Argument Correction: 
-    -- The error log shows 'name' actually contains the link, and 'link' contains a number.
-    -- We will check which one is the actual string link.
+    --- 1. Argument Correction 
     local actualLink = type(link) == "string" and link or name
     
-    -- 2. Safety check
+    -- 2. Basic Safety 
     if not actualLink or type(actualLink) ~= "string" then return end
     if not Enchantrix.Settings.GetSetting('all') then return end
 
-    -- 3. Extract Item ID using our helper
-    local itemId = Enchantrix.Util.GetItemIdFromLink(actualLink)
-    if not itemId then return end
-
-    -- 4. Set up the tip helper
+    -- 3. Determine Link Type 
+    local isItem = actualLink:find("item:")
+    local isEnchant = actualLink:find("enchant:") or actualLink:find("spell:")
+    
+    -- 4. Set up the tip helper 
     tooltip:SetFrame(tipFrame or _G.GameTooltip)
 
-    -- 5. Draw the disenchant data
-    -- We re-normalize the variables for the internal itemTooltip call
+    -- 5. Normalize variables 
     local cleanName = (type(name) == "string" and not name:find("|H")) and name or ""
     local cleanCount = tonumber(count) or 1
     local cleanQuality = tonumber(link) or tonumber(quality) or 0
-    
-    itemTooltip(tooltip, cleanName, actualLink, "item", itemId, cleanQuality, cleanCount)
 
-    -- 6. Handle Milling/Prospecting
-    if (Enchantrix.Settings.GetSetting('ShowAllCraftReagents')) then
-        enchantTooltip(tooltip, cleanName, actualLink, true)
+    -- 6. DIVERGENT LOGIC 
+    if isItem then
+        local itemId = Enchantrix.Util.GetItemIdFromLink(actualLink)
+        -- Only call itemTooltip if it is defined
+        if itemId and itemTooltip then
+            itemTooltip(tooltip, cleanName, actualLink, "item", itemId, cleanQuality, cleanCount)
+        end
+        
+        -- Add the 'and enchantTooltip' check here to prevent crashes
+        if Enchantrix.Settings.GetSetting('ShowAllCraftReagents') and enchantTooltip then
+            enchantTooltip(tooltip, cleanName, actualLink, true)
+        end
+    elseif isEnchant then
+        -- This is where the Helm Enchant crash (line 757) is happening.
+        -- We add the check 'and enchantTooltip' to skip safely if it's missing.
+        if type(enchantTooltip) == "function" then
+            enchantTooltip(tooltip, cleanName, actualLink, false)
+        end
     end
 
-    -- 7. Cleanup
+    -- 7. Cleanup (Keep)
     tooltip:ClearFrame(tipFrame or _G.GameTooltip)
 end
 
