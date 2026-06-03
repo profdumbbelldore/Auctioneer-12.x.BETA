@@ -194,7 +194,6 @@ local function GenerateGatherdata()
 	local GetContainerItemInfo = C_Container.GetContainerItemInfo
 	local GetInventoryItemLink = GetInventoryItemLink
 	local GetInventoryItemCount = GetInventoryItemCount
-	-- local GetRecipeFixedReagentItemLink = C_TradeSkillUI.GetRecipeFixedReagentItemLink -- ### removed in 12.0.0, see GetRecipeReagentItem below
 	local GetInboxItemInfo = GetInboxItem -- local name changed to avoid conflict with Getter name
 	local GetSendMailItemInfo = GetSendMailItem
 	local GetTradePlayerItemInfo = GetTradePlayerItemInfo
@@ -223,7 +222,7 @@ local function GenerateGatherdata()
 		GetMerchantItem = function(reg, getterArgs)
 			local index = getterArgs[1]
 			local additional = reg.additional
-			local _,_,p,q,na,cp,cu,ec,cID = GetMerchantItemInfo(index)
+			local _,_,p,q,na,cu,ec = C_MerchantFrame.GetItemInfo(index)
 			additional.quantity = q
 			additional.event = "SetMerchantItem"
 			additional.eventIndex = index
