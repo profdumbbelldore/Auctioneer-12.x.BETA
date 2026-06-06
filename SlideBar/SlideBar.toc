@@ -2,7 +2,7 @@
 ## Notes: Allows alternative placement of minimap icons into an expanding bar that sits off the side of the screen.
 ## OptionalDeps: !Swatter
 ##
-## Interface: 110200, 110207, 120000, 40400, 11503
+## Interface: 110200, 110207, 120000, 120005, 120007, 40400, 11503
 ## LoadOnDemand: 0
 ## SavedVariables: SlideBarConfig
 ##
