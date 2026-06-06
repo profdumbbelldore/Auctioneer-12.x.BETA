@@ -3,7 +3,7 @@
 ##
 ## IconTexture: Interface/Addons/!Swatter/Textures/SwatterIcon.blp
 ##
-## Interface: 110200, 110207, 120000, 40400, 11503
+## Interface: 110200, 110207, 120000, 120005, 120007, 40400, 11503
 ## SavedVariables: SwatterData
 ##
 ## Version: 12.x.x (Midnight)
