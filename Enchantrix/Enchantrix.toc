@@ -1,7 +1,7 @@
 ## Title: Enchantrix
 ## Notes: Display information in item tooltips pertaining to disenchanting, prospecting, and milling results. [11.x.BETA.4]
 ##
-## Interface: 110200, 110207, 120000, 40400, 11503
+## Interface: 110200, 110207, 120000, 120005, 120007, 40400, 11503
 ## LoadOnDemand: 1
 ## Dependencies: Stubby
 ## OptionalDeps: !nLog, Babylonian, DebugLib, Configator, SlideBar, LibExtraTip, TipHelper, LibDataBroker
