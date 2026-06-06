@@ -1,7 +1,7 @@
 ## Title: Auctioneer Core |cff774422(DF edition)
 ## Notes: Auctioneer assists players to track item values on the Auction House; whether buying or selling.
 ##
-## Interface: 110200, 110207, 120000
+## Interface: 110200, 110207, 120000, 120005, 120007
 ## LoadOnDemand: 0
 ## Dependencies: Stubby
 ## OptionalDependencies: !nLog, SlideBar, Configator, Babylonian, DebugLib, TipHelper, LibExtraTip, LibDataBroker
