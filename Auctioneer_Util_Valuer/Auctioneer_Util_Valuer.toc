@@ -1,7 +1,7 @@
 ## Title: Auctioneer Util: |cff447722Appraiser
 ## Notes: Shows price recommendations during sales.
 ##
-## Interface: 110200, 110207, 120000
+## Interface: 110200, 110207, 120000, 120005, 120007
 ## LoadOnDemand: 0
 ## Dependencies: Stubby, Auctioneer
 ## OptionalDependencies: !nLog, SlideBar, Configator, Babylonian, DebugLib, TipHelper, LibExtraTip, LibDataBroker
