@@ -140,7 +140,7 @@ function getReagentInfo(reagentID)
 	end
 
 	--Enchantrix.Util.DebugPrintQuick("reagentinfo checking ID: ", type(reagentID), reagentID, tonumber(reagentID), id );
-	local sName, sLink, iQuality, iLevel, rLevel, sType, sSubtype, iStack, sEquip, sTexture = GetItemInfo(id)
+	local sName, sLink, iQuality, iLevel, rLevel, sType, sSubtype, iStack, sEquip, sTexture = C_Item.GetItemInfo(id)
 
 	if (id and sName) then
 		-- save this reagent data while we have it
@@ -421,10 +421,9 @@ function getItemIdFromSig(sig)
 end
 
 function getItemIdFromLink(link)
-	local itemType, itemId = tooltip:DecodeLink(link)
-	if (itemType == "item") then
-		return itemId
-	end
+	if not link then return nil end
+	local itemId = link:match("item:(%d+)")
+	return tonumber(itemId)
 end
 
 
@@ -710,8 +709,8 @@ function Enchantrix.Util.GetIType(link)
 	--Enchantrix.Util.DebugPrintQuick("GetIType type: ", type(link), " link: ", link, tooltip:DecodeLink(link) )	-- DEBUGGING
 
 	local const = Enchantrix.Constants
-	local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, invTexture = GetItemInfo(link)
-    local effLevel, _preview, baseLevel = GetDetailedItemLevelInfo(link)
+	local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, invTexture = C_Item.GetItemInfo(link)
+    local effLevel, _preview, baseLevel = C_Item.GetDetailedItemLevelInfo(link)
     if effLevel then
         itemLevel = effLevel
     end
@@ -746,7 +745,7 @@ function Enchantrix.Util.GetITypeDetailed(link)
 
 	local const = Enchantrix.Constants
 	local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, invTexture = GetItemInfo(link)
-    local effLevel, _preview, baseLevel = GetDetailedItemLevelInfo(link)
+    local effLevel, _preview, baseLevel = C_Item.GetDetailedItemLevelInfo(link)
 
 	if not (itemName and itemEquipLoc and itemRarity and itemLevel) then
 		-- Enchantrix.Util.DebugPrintQuick("GetIType could not get item info for: ", link, itemName , itemEquipLoc , itemRarity , itemLevel, tooltip:DecodeLink(link) )
@@ -888,7 +887,7 @@ function Enchantrix.Util.DisenchantSkillRequiredForItem(link)
 		--Enchantrix.Util.DebugPrintQuick( "nil link", link )
 		return 0
 	end
-	local _, _, quality, itemLevel = GetItemInfo(link);
+	local _, _, quality, itemLevel = C_Item.GetItemInfo(link);
 	return  Enchantrix.Util.DisenchantSkillRequiredForItemLevel(itemLevel, quality);
 end
 
