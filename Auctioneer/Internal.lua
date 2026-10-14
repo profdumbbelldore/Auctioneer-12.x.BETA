@@ -179,24 +179,28 @@ function Internal:ItemKeyString(itemKey)
 end
 
 function Internal:ItemKeyFromLink(link)
-	if not link then return end
 	local linkType, linkOptions, name = LinkUtil.ExtractLink(link)
+	local linkBits = {strsplit(":", linkOptions)}
 
 	if linkType == "battlepet" then
-		local linkBits = {strsplit(":", linkOptions)}
+		-- 82800 is a cage.
 		local cageID = 82800
 		local speciesID = tonumber(linkBits[1])
 		return C_AuctionHouse.MakeItemKey(cageID, 0, 0, speciesID)
 	end
 
 	if linkType == "item" then
-		local linkBits = {strsplit(":", linkOptions)}
 		local itemID = tonumber(linkBits[1])
 		local itemSuffix = tonumber(linkBits[7]) or 0
-		local effectiveLevel = GetDetailedItemLevelInfo(link) or 0	
-		return C_AuctionHouse.MakeItemKey(itemID, effectiveLevel, itemSuffix, 0)
+		local itemLevel = 0
+		if AuctioneerData.itemHasLevel[itemID] == 1 then
+			itemLevel = GetDetailedItemLevelInfo(link)
+		end
+
+		return C_AuctionHouse.MakeItemKey(itemID, itemLevel, itemSuffix, 0)
 	end
 end
+
 function Internal:ItemKeyKey(itemKey)
 	if not itemKey or not itemKey.itemID then
 		return nil
