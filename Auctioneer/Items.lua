@@ -89,7 +89,7 @@ function Items:InfoStruct(item)
 		info.inventoryType = C_Item.GetItemInventoryTypeByID(itemID)
 
 		if C_Item.IsItemDataCachedByID(itemID) then
-			info.vendorPrice = select(11, GetItemInfo(itemID));
+			info.vendorPrice = select(11, C_Item.GetItemInfo(itemID));
 		end
 	end
 
