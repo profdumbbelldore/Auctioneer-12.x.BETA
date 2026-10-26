@@ -122,7 +122,7 @@ end
 	end
 	hooksecurefunc("PickupInventoryItem", pickupInventoryItemHook)
 	hooksecurefunc("SpellTargetItem", spellTargetItemHook)
-	hooksecurefunc("UseItemByName", useItemByNameHook);			-- added in 2.0, used by macro /use
+	hooksecurefunc(C_Item, "UseItemByName", useItemByNameHook);			-- added in 2.0, used by macro /use
 
 	-- events that we need to catch
 	Stubby.RegisterEventHook("UNIT_SPELLCAST_SUCCEEDED", "Enchantrix", onEvent)
@@ -316,7 +316,7 @@ function spellTargetItemHook(itemString)
 	--Enchantrix.Util.DebugPrintQuick("targetitemhook", itemString);
 	if ((UnitCastingInfo and not UnitCastingInfo("player")) or (CastingInfo and not CastingInfo())) then
 		if itemString then
-			local _, itemLink = GetItemInfo(itemString)
+			local _, itemLink = C_Item.GetItemInfo(itemString)
 			if itemLink then
 				--Enchantrix.Util.DebugPrint("Spellcast", ENX_INFO, "item targetted by item", "info:", itemLink)
 				DisenchantEvent.spellTarget = itemLink
@@ -331,7 +331,7 @@ function useItemByNameHook(itemString)
 	--Enchantrix.Util.DebugPrintQuick("useItemByNameHook", itemString);
 	if ((UnitCastingInfo and not UnitCastingInfo("player")) or (CastingInfo and not CastingInfo())) then
 		if itemString then
-			local _, itemLink = GetItemInfo(itemString)
+			local _, itemLink = C_Item.GetItemInfo(itemString)
 			if itemLink then
 				--Enchantrix.Util.DebugPrint("Spellcast", ENX_INFO, "item targetted by name", "info:", itemLink)
 				DisenchantEvent.spellTarget = itemLink
@@ -379,7 +379,7 @@ if (event == "UNIT_SPELLCAST_SUCCEEDED" and player == "player") then
 				-- now make sure the user had enough skill to disenchant it
 				-- make sure skill level is up to date
 				local skill = Enchantrix.Util.GetUserEnchantingSkill();
-				local name, link, quality, itemLevel = GetItemInfo( DisenchantEvent.spellTarget );
+				local name, link, quality, itemLevel = C_Item.GetItemInfo( DisenchantEvent.spellTarget );
 				local skillNeeded = Enchantrix.Util.DisenchantSkillRequiredForItemLevel(itemLevel, quality);
 				--Enchantrix.Util.DebugPrint("Spellcast", ENX_INFO, "cast failed 2", "info:", skill, skillNeeded )
 				if (skill >= skillNeeded) then

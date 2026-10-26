@@ -65,7 +65,7 @@ local tooltip = LibStub("nTipHelper:1")
 -- See full code in Enchantrix.Util.GetIType(link)
 function isDisenchantable(id)
 	if (id) then
-		local _, _, quality, _, _, itemType, itemSubType, itemStackCount, itemEquipLoc = GetItemInfo(id)
+		local _, _, quality, _, _, itemType, itemSubType, itemStackCount, itemEquipLoc = C_Item.GetItemInfo(id)
 		if (not quality) then
 			-- GetItemInfo() failed, item might be disenchantable
 			return true
@@ -301,7 +301,7 @@ function getLinkFromName(name)
 
 	local link = EnchantConfig.cache.names[name]
 	if link then
-		local n = GetItemInfo(link)
+		local n = C_Item.GetItemInfo(link)
 		if n ~= name then
 			EnchantConfig.cache.names[name] = nil
 		end
@@ -312,7 +312,7 @@ function getLinkFromName(name)
 		-- if we didn't find it in the cache, try something else
 		-- first, check our list of reagent item ids, because they're most likely
 		for i, _ in ipairs( Enchantrix.Constants.StaticPrices ) do
-			local n, link = GetItemInfo(i)
+			local n, link = C_Item.GetItemInfo(i)
 			if n and (n == name) then
 				EnchantConfig.cache.names[name] = link
 				break
@@ -365,7 +365,7 @@ function getReagentPrice(reagentID, extra)
                 local _, reagentLink, _, _, _, _, _, _, _ = getReagentInfo(reagentID)
 				price5 = AucAdvanced.API.GetAlgorithmValue(extra, reagentLink)
 			else
-                local _, link = GetItemInfo(reagentID);
+                local _, link = C_Item.GetItemInfo(reagentID);
 				price5 = AucAdvanced.API.GetMarketValue(link);
 			end
 		end
@@ -744,7 +744,7 @@ function Enchantrix.Util.GetITypeDetailed(link)
 	--Enchantrix.Util.DebugPrintQuick("GetIType type: ", type(link), " link: ", link, tooltip:DecodeLink(link) )	-- DEBUGGING
 
 	local const = Enchantrix.Constants
-	local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, invTexture = GetItemInfo(link)
+	local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, invTexture = C_Item.GetItemInfo(link)
     local effLevel, _preview, baseLevel = C_Item.GetDetailedItemLevelInfo(link)
 
 	if not (itemName and itemEquipLoc and itemRarity and itemLevel) then

@@ -158,7 +158,7 @@ local function isAutoDisenchantAllowed(link, count)
 end
 
 local function nameFromIgnoreListItem(item)
-	local name = GetItemInfo(item)
+	local name = C_Item.GetItemInfo(item)
 	return name
 end
 
