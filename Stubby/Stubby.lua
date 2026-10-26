@@ -744,8 +744,28 @@ end
 
 function eventWatcher(event, ...)
 	if (config.events[event]) then
+		-- Fallback code to defer loading of C_ APIs
+		if event == "ADDON_LOADED" and not IsLoggedIn() then
+			local arg1 = ...
+			local deferredEvents = config.events[event]
+			
+			local deferFrame = CreateFrame("Frame")
+			deferFrame:RegisterEvent("PLAYER_LOGIN")
+			deferFrame:SetScript("OnEvent", function(self)
+				for ownerAddOn, hookDetail in pairs(deferredEvents) do
+					if hookDetail and type(hookDetail.f) == "function" then
+						pcall(hookDetail.f, hookDetail.a, "ADDON_LOADED", arg1)
+					end
+				end
+				self:UnregisterAllEvents()
+			end)
+			return
+		end
+
 		for ownerAddOn, hookDetail in pairs(config.events[event]) do
-			hookDetail.f(hookDetail.a, event, ...)
+			if hookDetail and type(hookDetail.f) == "function" then
+				hookDetail.f(hookDetail.a, event, ...)
+			end
 		end
 	end
 end
