@@ -328,7 +328,7 @@ function itemTooltip(tooltip, name, link, itemType, itemId, quality, count)
 	-- useful for debugging, not useful for most folks, setting must be changed manually in the settings file
 	if ( Enchantrix.Settings.GetSetting('TooltipShowItemDebugDetails') ) then
 --	if ( true ) then
-		local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, invTexture = GetItemInfo(link)
+		local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, invTexture = C_Item.GetItemInfo(link)
         effLevel = GetDetailedItemLevelInfo(link)
         if effLevel then
             itemLevel = effLevel

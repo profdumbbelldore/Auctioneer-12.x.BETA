@@ -127,7 +127,7 @@ end
 
 -- check item quality and reason for purchase (if BeanCounter is installed)
 local function isAutoDisenchantAllowed(link, count)
-	local _, _, quality, _ = GetItemInfo(link)
+	local _, _, quality, _ = C_Item.GetItemInfo(link)
 
 	if (quality == 3) and (not Enchantrix.Settings.GetSetting('AutoDeRareItems')) then
 		return false
@@ -179,7 +179,7 @@ local function isState(state)
 end
 
 local function getDisenchantOrProspectValue(link, count)
-	local _, _, quality, level = GetItemInfo(link)
+	local _, _, quality, level = C_Item.GetItemInfo(link)
 
     --debugSpam("Checking Item ", link );
 	if not (quality and level) then
