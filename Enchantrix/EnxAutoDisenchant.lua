@@ -187,7 +187,7 @@ local function getDisenchantOrProspectValue(link, count)
 	    return
     end
 
-    local effLevel = GetDetailedItemLevelInfo(link)
+    local effLevel = C_Item.GetDetailedItemLevelInfo(link)
     if effLevel then
         level = effLevel
     end
